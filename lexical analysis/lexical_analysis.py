@@ -4,6 +4,7 @@
 def get_token():
     file_name = input("默认为txt文件，不需要后缀名，非工作目录需带路径\n")
 
+    token = list()
     # 类型
     identifier = list()
     char = list()
@@ -14,17 +15,16 @@ def get_token():
 
     def get_attribute(word_need_indentify):
         """传入一个单词，得到token的属性分类结果"""
-        print('(', word_need_indentify, ',', end='')
         # 关键字
         if word_need_indentify in key_word:
-            print('K关键字,', key_word.index(word_need_indentify) + 1, end='')
+            token.append((word_need_indentify, 'K关键字', key_word.index(word_need_indentify)))
 
         # 字符
         elif word_need_indentify[0] == "'":
             if word_need_indentify[-1] == "'":
                 if word_need_indentify not in char:
                     char.append(word_need_indentify)
-                print('C字符,', char.index(word_need_indentify) + 1, end='')
+                token.append((word_need_indentify, 'C字符', char.index(word_need_indentify)))
             else:
                 print('词法错误，未找到\'', end='')
 
@@ -33,7 +33,7 @@ def get_token():
             if word_need_indentify[-1] == '"':
                 if word_need_indentify not in string:
                     string.append(word_need_indentify)
-                print('S字符串,', string.index(word_need_indentify) + 1, end='')
+                token.append((word_need_indentify, 'S字符串', string.index(word_need_indentify)))
             else:
                 print('词法错误，未找到\"', end='')
 
@@ -41,13 +41,13 @@ def get_token():
         elif word_need_indentify[0].isdigit():
             sign = 1
             for i in word_need_indentify[1:]:
-                if not i.isdigit() or i == '.' or i == 'e':
+                if not (i.isdigit() or i == '.' or i == 'e'):
                     sign = 0
                     break
             if sign == 1:
                 if word_need_indentify not in constant:
                     constant.append(word_need_indentify)
-                print('c常数,', constant.index(word_need_indentify) + 1, end='')
+                token.append((word_need_indentify, 'c常数', constant.index(word_need_indentify)))
             else:
                 print('词法错误', end='')
 
@@ -61,14 +61,12 @@ def get_token():
             if sign == 1:
                 if word_need_indentify not in identifier:
                     identifier.append(word_need_indentify)
-                print('i标识符,', identifier.index(word_need_indentify) + 1, end='')
+                token.append((word_need_indentify, 'i标识符', identifier.index(word_need_indentify)))
             else:
                 print('词法错误', end='')
 
         else:
             print('无法识别', end='')
-
-        print(')', end=' ')
 
     try:
         with open(file_name + '.txt') as f:
@@ -83,7 +81,7 @@ def get_token():
 
                     # 关键字
                     if word in key_word:
-                        print('(', word, ',K关键字,', key_word.index(word) + 1, ')', end=' ')
+                        token.append((word, 'K关键字', key_word.index(word)))
 
                     else:
                         last_pos = -1
@@ -97,24 +95,20 @@ def get_token():
                                 if i - last_pos > 1:
                                     get_attribute(word[last_pos + 1:i])
                                 if word[i:i + 2] in delimiter:
-                                    print('(', word[i:i + 2], ',P界符,', delimiter.index(word[i:i + 2]) + 1, ')', end=' ')
+                                    token.append((word[i:i + 2], 'P界符', delimiter.index(word[i:i + 2])))
                                     long_delimiter = 1
                                     last_pos = i + 1
                                 else:
-                                    print('(', word[i], ',P界符,', delimiter.index(word[i]) + 1, ')', end=' ')
+                                    token.append((word[i], 'P界符', delimiter.index(word[i])))
                                     last_pos = i
                             elif word[i] == '\n':
                                 break
 
-        print()
-        print('标识符', identifier)
-        print('字符', char)
-        print('字符串', string)
-        print('常数', constant)
+        print(token)
     except FileNotFoundError:
         print("无此文件")
 
-    return identifier, char, string, constant
+    return token
 
 
 if __name__ == '__main__':
