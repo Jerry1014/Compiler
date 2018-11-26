@@ -2,7 +2,7 @@
 import sys
 
 sys.path.append(r'C:\Users\Jerry\PycharmProjects\Compiler\lexical analysis')
-from lexical_analysis import get_token
+from lexical_analysis2 import get_token
 
 
 class Automaton:
@@ -51,6 +51,7 @@ class Automaton:
         try:
             # 用于配合产生式中I的定义
             if self._token[self._token_pos][1] == 'i标识符' or self._token[self._token_pos][1] == 'c常数':
+                self._token[self._token_pos] = ('I', self._token[self._token_pos][0])
                 self._current_char = 'I'
             else:
                 self._current_char = self._token[self._token_pos][0]
@@ -66,19 +67,19 @@ class Automaton:
                         self._state.append(tr[2][:-1])
                     else:
                         # 规约
+                        self.semantic_action_step1(tr[4][:-1], self._token[self._token_pos-int(tr[2]):self._token_pos])
+
                         self._token_pos -= int(tr[2])
                         token = self._token[:self._token_pos] + [(tr[3], '')]
                         token += self._token[self._token_pos + int(tr[2]):]
 
-                        self.semantic_action_step1(tr[4][:-1], self._token[self._token_pos-int(tr[2]):self._token_pos+1])
-
                         self._token = token
                         self._state = self._state[:-int(tr[2])]
 
-                        self.semantic_action_step1(self._token_pos)
+                        self.semantic_action_step2(self._token_pos)
 
                         self._token_pos -= 1
-                        print(self._token)
+                        #print(self._token)
 
             if sign == 0:
                 self._state = ['Wrong']
