@@ -1,12 +1,15 @@
 # 导入词法分析
 import sys
+
 sys.path.append(r'C:\Users\Jerry\PycharmProjects\Compiler\lexical analysis')
 from lexical_analysis import get_token
 
-class Automata:
+
+class Automaton:
     """
     自动机
     """
+
     def __init__(self, start_state, token):
         """
         :param start_state: 开始状态，str
@@ -14,7 +17,7 @@ class Automata:
         """
         # 状态 token串 当前读取位置 当前字符
         self._state = [start_state, ]
-        self._token = token + [('#','')]
+        self._token = token + [('#', '')]
         self._token_pos = -1
         self._current_char = ''
 
@@ -64,8 +67,8 @@ class Automata:
                     else:
                         # 规约
                         self._token_pos -= int(tr[2])
-                        token = self._token[:self._token_pos] + [(tr[3][:-1],'')]
-                        token += self._token[self._token_pos+int(tr[2]):]
+                        token = self._token[:self._token_pos] + [(tr[3][:-1], '')]
+                        token += self._token[self._token_pos + int(tr[2]):]
                         self._token = token
                         self._state = self._state[:-int(tr[2])]
                         self._token_pos -= 1
@@ -105,8 +108,9 @@ class Automata:
     def semantic_action_step2(self):
         pass
 
+
 if __name__ == '__main__':
     my_token = get_token()
 
-    auto_ma = Automata('0', my_token)
+    auto_ma = Automaton('0', my_token)
     auto_ma.start()
