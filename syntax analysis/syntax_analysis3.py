@@ -67,10 +67,16 @@ class Automaton:
                     else:
                         # 规约
                         self._token_pos -= int(tr[2])
-                        token = self._token[:self._token_pos] + [(tr[3][:-1], '')]
+                        token = self._token[:self._token_pos] + [(tr[3], '')]
                         token += self._token[self._token_pos + int(tr[2]):]
+
+                        self.semantic_action_step1(tr[4][:-1], self._token[self._token_pos-int(tr[2]):self._token_pos+1])
+
                         self._token = token
                         self._state = self._state[:-int(tr[2])]
+
+                        self.semantic_action_step1(self._token_pos)
+
                         self._token_pos -= 1
                         print(self._token)
 
@@ -78,7 +84,7 @@ class Automaton:
                 self._state = ['Wrong']
 
         except Exception as e:
-            print(e.with_traceback())
+            print(e)
             self._state = ['Wrong']
             return
 
@@ -102,10 +108,21 @@ class Automaton:
         except FileNotFoundError:
             print('文件不存在')
 
-    def semantic_action_step1(self):
+    def semantic_action_step1(self, action, *op):
+        """
+        在token串改变前，保存即将用于语义动作的相关属性
+        :param action: 动作指示
+        :param op: 语义动作的对象
+        :return: None
+        """
         pass
 
-    def semantic_action_step2(self):
+    def semantic_action_step2(self, op_pos):
+        """
+        用于生成语义动作
+        :param op_pos: 要操作的对象
+        :return: None
+        """
         pass
 
 
