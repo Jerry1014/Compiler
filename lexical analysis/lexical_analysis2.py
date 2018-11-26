@@ -100,7 +100,11 @@ def get_token(this_format):
 
                             if word[i] in delimiter:
                                 if i - last_pos > 1:
-                                    get_attribute(word[last_pos + 1:i])
+                                    try:
+                                        get_attribute(word[last_pos + 1:i])
+                                    except LexicalError as e:
+                                        print('At line',e.line_num,',there is a error ',e.msg)
+                                        return
                                 if word[i:i + 2] in delimiter:
                                     need_to_add = this_format.format\
                                         (word[i:i + 2], 'P界符', delimiter.index(word[i:i + 2]))
@@ -112,7 +116,7 @@ def get_token(this_format):
                                 token.append(need_to_add)
                             elif word[i] == '\n':
                                 break
-            line_num += 1
+                line_num += 1
 
         print(token)
     except FileNotFoundError:
