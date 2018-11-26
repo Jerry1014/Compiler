@@ -1,6 +1,4 @@
 # -*- coding: utf-8 -*-
-
-
 def get_token():
     file_name = input("默认为txt文件，不需要后缀名，非工作目录需带路径\n")
 
