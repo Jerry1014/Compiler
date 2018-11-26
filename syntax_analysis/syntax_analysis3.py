@@ -1,25 +1,36 @@
+# 导入词法分析
 import sys
-
 sys.path.append(r'C:\Users\Jerry\PycharmProjects\Compiler\lexical analysis')
-
 from lexical_analysis import get_token
 
-
-class State:
+class Automata:
+    """
+    自动机
+    """
     def __init__(self, start_state, token):
+        """
+        :param start_state: 开始状态，str
+        :param token: 要进行语法分析的token序列， [('A','类型','符号表索引'),]
+        """
+        # 状态 token串 当前读取位置 当前字符
         self._state = [start_state, ]
         self._token = token + [('#','')]
         self._token_pos = -1
         self._current_char = ''
 
+        # 状态转换表
         self.trans_dict = dict()
-        self.get_trans_dict(self)
+        self.get_trans_dict()
 
     def start(self):
+        """
+        用于启动自动机进行分析，最后的结果为RIGHT（符合语法）/WRONG（不符）
+        :return: None
+        """
+        # 状态转换表不为空
         if len(self.trans_dict) > 0:
             while True:
-                print(self._token)
-                self.read_next_token(self._token)
+                self.read_next_token()
                 if self._state[-1] == 'OK':
                     print('Right')
                     break
@@ -27,34 +38,52 @@ class State:
                     print('Wrong')
                     break
 
-    def read_next_token(self, token):
+    def read_next_token(self):
+        """
+        在self._token读取下一符号，进行状态转换/规约
+        :return: None
+        """
         # 当前状态 当前符号 移进规约标志 下一状态 规约符号个数（若有） 规约产生式右部（若有）
         self._token_pos += 1
-        if token[self._token_pos][1] == 'i标识符' or token[self._token_pos][1] == 'c常数':
-            self._current_char = 'I'
-        else:
-            self._current_char = token[self._token_pos][0]
+        try:
+            # 用于配合产生式中I的定义
+            if self._token[self._token_pos][1] == 'i标识符' or self._token[self._token_pos][1] == 'c常数':
+                self._current_char = 'I'
+            else:
+                self._current_char = self._token[self._token_pos][0]
 
-        sign = 0
-        for tr in self.trans_dict[self._state[-1]]:
-            if self._current_char in tr[0]:
-                sign = 1
+            sign = 0
+            for tr in self.trans_dict[self._state[-1]]:
+                if self._current_char in tr[0]:
+                    # 存在对应当前状态和当前字符的转换
+                    sign = 1
 
-                if tr[1] == 'M':
-                    self._state.append(tr[2][:-1])
-                else:
-                    self._token_pos -= int(tr[2])
-                    token = self._token[:self._token_pos] + [(tr[3][:-1],'')]
-                    token += self._token[self._token_pos+int(tr[2]):]
-                    self._token = token
-                    self._state = self._state[:-int(tr[2])]
-                    self._token_pos -= 1
+                    if tr[1] == 'M':
+                        # 移进
+                        self._state.append(tr[2][:-1])
+                    else:
+                        # 规约
+                        self._token_pos -= int(tr[2])
+                        token = self._token[:self._token_pos] + [(tr[3][:-1],'')]
+                        token += self._token[self._token_pos+int(tr[2]):]
+                        self._token = token
+                        self._state = self._state[:-int(tr[2])]
+                        self._token_pos -= 1
+                        print(self._token)
 
-        if sign == 0:
-            self._state = 'Wrong'
+            if sign == 0:
+                self._state = ['Wrong']
 
-    @staticmethod
+        except Exception as e:
+            print(e.with_traceback())
+            self._state = ['Wrong']
+            return
+
     def get_trans_dict(self):
+        """
+        载入状态转换文件
+        :return: None
+        """
         try:
             trans_file = input('输入状态转移文件，不需要后缀名，默认txt\n')
             with open(trans_file + '.txt') as f:
@@ -73,5 +102,5 @@ class State:
 if __name__ == '__main__':
     my_token = get_token()
 
-    auto_ma = State('0', my_token)
+    auto_ma = Automata('0', my_token)
     auto_ma.start()
