@@ -82,6 +82,7 @@ class Automata:
     def get_trans_dict(self):
         """
         载入状态转换文件
+        文件格式（空格分隔）：当前状态 当前符号（可有多个，逗号分隔eg:+，-) 移进规约标志 下一状态 规约符号个数（若有） 规约产生式右部（若有）
         :return: None
         """
         try:
@@ -97,6 +98,9 @@ class Automata:
 
         except FileNotFoundError:
             print('文件不存在')
+
+    def semantic_action(self):
+        pass
 
 
 if __name__ == '__main__':
