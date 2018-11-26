@@ -13,7 +13,7 @@ class SemanticAutomaton(Automaton):
         self._semantic_sym = ''
         self._quaternion = list()
 
-    def semantic_action_step1(self, action, *op):
+    def semantic_action_step1(self, action, op):
         """
         在token串改变前，保存即将用于语义动作的相关属性
         :param action: 动作指示
@@ -21,9 +21,9 @@ class SemanticAutomaton(Automaton):
         :return: None
         """
         if action in self._action_dict.keys():
-            if self._action_dict[action] == '=':
+            if action == '=':
                 self._semantic_sym = op[0][-1]
-            elif self._action_dict[action] == '=':
+            elif action == '=3':
                 self._semantic_sym = op[1][-1]
             else:
                 self._semantic_sym = 't'+str(self._temporary_num)
@@ -44,7 +44,7 @@ class SemanticAutomaton(Automaton):
 
 
 if __name__ == '__main__':
-    my_token = get_token()
+    my_token = get_token('{0} {1} {2}')
 
     sm = SemanticAutomaton('0', my_token)
     sm.start()

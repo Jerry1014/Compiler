@@ -51,7 +51,7 @@ class Automaton:
         try:
             # 用于配合产生式中I的定义
             if self._token[self._token_pos][1] == 'i标识符' or self._token[self._token_pos][1] == 'c常数':
-                self._token[self._token_pos] = ('I', self._token[self._token_pos][0])
+                self._token[self._token_pos] = ['I', '',self._token[self._token_pos][0]]
                 self._current_char = 'I'
             else:
                 self._current_char = self._token[self._token_pos][0]
@@ -70,7 +70,7 @@ class Automaton:
                         self.semantic_action_step1(tr[4][:-1], self._token[self._token_pos-int(tr[2]):self._token_pos])
 
                         self._token_pos -= int(tr[2])
-                        token = self._token[:self._token_pos] + [(tr[3], '')]
+                        token = self._token[:self._token_pos] + [[tr[3], '']]
                         token += self._token[self._token_pos + int(tr[2]):]
 
                         self._token = token
@@ -79,7 +79,7 @@ class Automaton:
                         self.semantic_action_step2(self._token_pos)
 
                         self._token_pos -= 1
-                        #print(self._token)
+                        print(self._token)
 
             if sign == 0:
                 self._state = ['Wrong']
@@ -109,7 +109,7 @@ class Automaton:
         except FileNotFoundError:
             print('文件不存在')
 
-    def semantic_action_step1(self, action, *op):
+    def semantic_action_step1(self, action, op):
         """
         在token串改变前，保存即将用于语义动作的相关属性
         :param action: 动作指示
@@ -128,7 +128,7 @@ class Automaton:
 
 
 if __name__ == '__main__':
-    my_token = get_token()
+    my_token = get_token('{0} {1} {2}')
 
     auto_ma = Automaton('0', my_token)
     auto_ma.start()

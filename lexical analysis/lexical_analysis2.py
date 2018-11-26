@@ -72,7 +72,7 @@ def get_token(this_format):
 
         else:
             raise LexicalError(line_num, '无法识别')
-        token.append(need_to_add)
+        token.append(need_to_add.split(' '))
 
     try:
         with open(file_name + '.txt') as f:
@@ -88,7 +88,7 @@ def get_token(this_format):
 
                     # 关键字
                     if word in key_word:
-                        token.append(this_format.format(word, 'K关键字', key_word.index(word)))
+                        token.append(this_format.format(word, 'K关键字', key_word.index(word)).split(' '))
 
                     else:
                         last_pos = -1
@@ -113,7 +113,7 @@ def get_token(this_format):
                                 else:
                                     need_to_add = this_format.format(word[i], 'P界符', delimiter.index(word[i]))
                                     last_pos = i
-                                token.append(need_to_add)
+                                token.append(need_to_add.split(' '))
                             elif word[i] == '\n':
                                 break
                 line_num += 1
@@ -126,5 +126,6 @@ def get_token(this_format):
 
 
 if __name__ == '__main__':
+    # 0.单词 1.类型 2.序号
     my_format = '{1} {0} {2}'
     get_token(my_format)
