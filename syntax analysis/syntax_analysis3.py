@@ -99,9 +99,11 @@ class Automata:
         except FileNotFoundError:
             print('文件不存在')
 
-    def semantic_action(self):
+    def semantic_action_step1(self):
         pass
 
+    def semantic_action_step2(self):
+        pass
 
 if __name__ == '__main__':
     my_token = get_token()
