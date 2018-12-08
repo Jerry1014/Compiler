@@ -1,14 +1,19 @@
 # Compiler
-编译原理实验
+编译原理实验与课设
 
-（词法分析）
-lexical analysis  急待封装
+design 课程设计
+---
 
-（词法分析）
-syntax_analysis1（递归子程序） 基本完成，待重构
-syntax_analysis2 （简单字符） 基本完成，待重构
-syntax_analysis3 （LR（1）） 自动机，封装好
 
-（语义分析）
-semantic_analysis1 基于自动机
-
+experiment 实验
+---
+- lexical analysis 词法分析
+    - 1 返回token串（tuple）组成的列表
+    - 2 返回token串（str，空格分割）组成的列表，可定义串内排列顺序
+- syntax analysis 语法分析
+    - 1 递归下降子程序
+    - 2 简单符号优先
+    - 3 LR（1）
+- semantic analysis 语义分析
+    - 1 LR（1）
+    - 2 递归下降子程序

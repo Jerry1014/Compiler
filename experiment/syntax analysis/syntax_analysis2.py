@@ -1,5 +1,6 @@
+import os
 import sys
-sys.path.append(r'C:\Users\Jerry\PycharmProjects\Compiler\lexical analysis')
+sys.path.append(os.path.abspath(r'../lexical analysis'))
 
 from lexical_analysis import get_token
 
