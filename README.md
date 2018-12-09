@@ -3,6 +3,9 @@
 
 design 课程设计
 ---
+- lexer 词法分析器
+    -       用于获取token
+            设置好文件名字后，返回迭代器，每次调用next来获取下一个token，以this_format指定的形式返回
 
 
 experiment 实验
