@@ -73,6 +73,7 @@ def get_token(this_format, file_name):
             words = line.split(' ')
             # 多个空格会产生''的处理
             for word in words:
+                note = False
                 if word == '':
                     continue
 
@@ -100,6 +101,9 @@ def get_token(this_format, file_name):
                                 token = this_format.format(word[i:i + 2], 'P')
                                 long_delimiter = True
                                 last_pos = i + 2
+                            elif word[i:i + 2] == '//':
+                                note = True
+                                break
                             else:
                                 token = this_format.format(word[i], 'P')
                                 last_pos = i + 1
@@ -107,6 +111,8 @@ def get_token(this_format, file_name):
 
                         elif word[i] == '\n':
                             break
+            if note:
+                continue
 
             line_num += 1
 
