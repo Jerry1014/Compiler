@@ -37,20 +37,6 @@ def get_am(left, right, pos, next, state):
         cur_char_state = dict()
         non_terminal_next = dict()
 
-        # 获取当前产生式中的非终结符的follow
-        for i in range(len(right)):
-            if right[i] in all_production.keys():
-                if i != len(right) - 1:
-                    if right[i] not in non_terminal_next.keys():
-                        non_terminal_next[i] = [right[i + 1]]
-                    else:
-                        non_terminal_next[i].append(right[i + 1])
-                else:
-                    if right[i] not in non_terminal_next.keys():
-                        non_terminal_next[i] = next
-                    else:
-                        non_terminal_next[i] += next
-
         # 当前产生式继续往下读
         cur_char_state[right[pos]] = state_count
         get_am(left, right, pos + 1, next, state_count)
@@ -59,31 +45,39 @@ def get_am(left, right, pos, next, state):
         state_count += 1
 
         # 规约当前产生式中的非终结符
-        # 当前产生式读取的字符，用于判断是否继续加入产生式  当前所有产生式
-        cur_read_char = right[pos]
-        cur_all_production = list()
+        # 当前产生式读取的字符，用于判断是否继续加入产生式
+        cur_read_char = list()
+
+        # 如果当前产生式当前读取符号为非终结符
+        if right[pos] in all_production.keys():
+            cur_read_char.append(right[pos])
+            if pos != len(right)-2:
+                non_terminal_next[right[pos]] = [right[pos+1]]
+            else:
+                non_terminal_next[right[pos]] = next
+
         # 添加所有的产生式
-        while cur_read_char in all_production.keys():
-            cur_all_production.append([right[pos], all_production[right[pos]]])
-
-        # 求next
-        for production in cur_all_production:
-            for i in range(len(production[1])):
-                if production[1][i] in all_production.keys():
-                    if i != len(right) - 1:
-                        if production[1][i] not in non_terminal_next.keys():
-                            non_terminal_next[i] = [production[1][i + 1]]
+        while len(cur_read_char) != 0:
+            # 添加该非终结符的所有产生式，并计算follow集，并加入可能的新的产生式
+            for production in all_production[cur_read_char[0]]:
+                if production[0] in all_production.keys():
+                    if production[0] == cur_read_char[0]:
+                        if cur_read_char[0] in non_terminal_next.keys():
+                            if len(production) > 2:
+                                non_terminal_next[cur_read_char[0]].append(production[1])
+                            else:
+                                non_terminal_next[cur_read_char[0]].append(non_terminal_next[cur_read_char[0]])
                         else:
-                            non_terminal_next[i].append(production[1][i + 1])
+                            if len(production) > 2:
+                                non_terminal_next[cur_read_char[0]] = [production[1]]
+                            else:
+                                non_terminal_next[cur_read_char[0]] = non_terminal_next[cur_read_char[0]]
                     else:
-                        if production[1][i] not in non_terminal_next.keys():
-                            non_terminal_next[i] = non_terminal_next[production[0]]
-                        else:
-                            non_terminal_next[i] += non_terminal_next[production[0]]
+                        cur_read_char.append(production[0])
 
-        # 递归各个产生式
-        for production in cur_all_production:
-            get_am(production[0], production[1], 1, non_terminal_next[production[0]], state_count)
-            # 2 * M 10
-            f.writelines(str(state) + ' ' + production[1][0] + ' M ' + str(state_count))
-            state_count += 1
+            # 生成该非终结符的移进状态
+            for production in all_production[cur_read_char[0]]:
+                get_am(cur_read_char[0], production, 1, non_terminal_next[cur_read_char[0]], state_count)
+                # 2 * M 10
+                f.writelines(str(state) + ' ' + production[0] + ' M ' + str(state_count))
+                state_count += 1
