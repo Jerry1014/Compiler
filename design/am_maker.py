@@ -1,5 +1,5 @@
 def get_first(a_non_terminal_char):
-    pass
+    return set()
 
 
 def get_am(left, right, pos, next, state):
@@ -15,115 +15,147 @@ def get_am(left, right, pos, next, state):
     :param left:str 产生式左部
     :param right:list of str 产生式右部
     :param pos:int 产生式当前读取位置，从0开始
-    :param next:list of str 产生式的follow集合
+    :param next:set of str 产生式的follow集合
     :param state:int 当前子程序代表的状态
     :return:None
     """
-    global state_count
+    global state_count, has_state
     # 生成规约状态
-    if pos >= len(right) - 1:
+    if pos == len(right) - 1:
+        set_of_next = set(next)
         next_str = ''
-        for i in next:
+        for i in set_of_next:
             next_str += i + ','
         with open(am_file_name, 'a') as f:
             # 3 +,-,*,/,# G 1 T =
             f.writelines(
                 str(state) + ' ' + next_str[:-1] + ' G ' + str(len(right) - 1) + ' ' + left + ' ' + right[-1] + '\n')
+        return
 
-    else:
-        # 生成移进状态
-        # 当前读取字符和状态的映射，用于合并读取同一字符的不同状态  非终结符（key，str）及它的follow（value，list）
-        cur_char_state = dict()
-        non_terminal_next = dict()
+    # 当pos为1时，记录has_state信息，在后续对重复状态的判断中，就是对产生式读取第一个字符后进行判断
+    elif pos == 1:
+        if left in has_state.keys():
+            has_state[left].append([all_production[left].index(right), next, state])
+        else:
+            has_state[left] = [[all_production[left].index(right), next, state]]
 
-        # 当前产生式继续往下读
-        cur_char_state[right[pos]] = state
-
+    # 生成移进状态
+    # 当前字符为终结符
+    if right[pos] not in all_production.keys():
         with open(am_file_name, 'a') as f:
             # 2 * M 10
             f.writelines(str(state) + ' ' + right[pos] + ' M ' + str(state_count) + '\n')
-
         state_count += 1
         get_am(left, right, pos + 1, next, state_count - 1)
 
-        # 规约当前产生式中的非终结符
+    # 当前字符为非终结符
+    else:
+        # 先处理读取字符的情况
+        # with open(am_file_name, 'a') as f:
+        #     # 2 * M 10
+        #     f.writelines(str(state) + ' ' + right[pos] + ' M ' + str(state_count) + '\n')
+        # state_count += 1
+        # 一定要先加一，因为嵌套可能不止一层，先调用再加会导致错误
+        # 移进的时候不会导致产生相同的状态，要产生，读取该产生式第一个字符的时候就产生了
+        # move_char_state用来保存当前读取符号和对应的状态，
+        # move_char_state = (right[pos], state_count - 1)
+        # get_am(left, right, pos + 1, next, state_count - 1)
+
+        # 记录展开后所有的产生式，key:str 下一个读取的字符 value:list of list 每一个list为一个产生式，[left，pro_num（产生式序号）]
+        production_this = {right[pos]: [[left, all_production[left].index(right), pos]]}
+        # 非终结符（key，str）及它的follow（value，set）
+        left_next = {left: next}
         # 当前产生式读取的字符，用于判断是否继续加入产生式
-        cur_read_char = list()
+        cur_read_char = [right[pos]]
 
-        # 如果当前产生式当前读取符号为非终结符
-        if right[pos] in all_production.keys():
-            cur_read_char.append(right[pos])
-            if pos != len(right) - 2:
-                if right[pos + 1] not in all_production.keys():
-                    non_terminal_next[right[pos]] = [right[pos + 1]]
-                else:
-                    non_terminal_next[right[pos]] = get_first(right[pos + 1])
+        # 添加当前这个非终结符的部分next
+        if pos != len(right) - 2:
+            if right[pos] not in left_next.keys():
+                left_next[right[pos]] = set()
+            if right[pos + 1] not in all_production.keys():
+                left_next[right[pos]].add(right[pos + 1])
             else:
-                non_terminal_next[right[pos]] = next
+                left_next[right[pos]] |= get_first(right[pos + 1])
+        else:
+            left_next[right[pos]] = next
 
-        # 添加所有的产生式
+        # 添加所有的产生式和它们的next
         while len(cur_read_char) != 0:
             # 添加该非终结符的所有产生式，并计算follow集，并加入可能的新的产生式
             handling_char = cur_read_char[0]
-            for production in all_production[handling_char]:
-                # 对cur_read_char第一个非终结符的产生式逐条进行处理，如果产生式第一个还是非终结符
-                if production[0] in all_production.keys():
-                    # 若此非终结符和要处理的非终结符相同，eg：E->E+F
-                    if production[0] == handling_char:
-                        if len(production) > 2:
-                            tem_next = list()
-                            if production[1] in all_production.keys():
-                                tem_next = get_first(production[1])
-                            else:
-                                tem_next = [production[1]]
-                            if handling_char in non_terminal_next.keys():
-                                non_terminal_next[handling_char] += tem_next
-                            else:
-                                non_terminal_next[handling_char] = tem_next
-                    else:
-                        cur_read_char.append(production[0])
-                        if len(production) > 2:
-                            tem_next = list()
-                            if production[1] in all_production.keys():
-                                tem_next = get_first(production[1])
-                            else:
-                                tem_next = [production[1]]
-                            if production[0] in non_terminal_next.keys():
-                                non_terminal_next[production[0]] += tem_next
-                            else:
-                                non_terminal_next[production[0]] = tem_next
-                        else:
-                            non_terminal_next[production[0]] = non_terminal_next[handling_char]
-
-            # 生成该非终结符的移进状态
-            for production in all_production[handling_char]:
-                if production[0] in cur_char_state.keys():
-                    get_am(handling_char, production, 1, non_terminal_next[handling_char],
-                           cur_char_state[handling_char])
+            for index_of_production in range(len(all_production[handling_char])):
+                # 将产生式添加进项目集
+                production = all_production[handling_char][index_of_production]
+                if production[0] in production_this.keys():
+                    production_this[production[0]].append([handling_char, index_of_production, 0])
                 else:
-                    with open(am_file_name, 'a') as f:
-                        # 2 * M 10
-                        f.writelines(str(state) + ' ' + production[0] + ' M ' + str(state_count) + '\n')
+                    production_this[production[0]] = [[handling_char, index_of_production, 0]]
 
-                    state_count += 1
-                    get_am(handling_char, production, 1, non_terminal_next[handling_char], state_count - 1)
-                    cur_char_state[production[0]] = state
+                # 如果产生式第一个还是非终结符
+                if production[0] in all_production.keys():
+                    tem = set()
+                    if production[1] in all_production.keys():
+                        tem = get_first(production[1])
+                    elif len(production) > 2:
+                        tem.add(production[1])
+                    else:
+                        tem |= left_next[handling_char]
+                    if production[0] not in left_next.keys():
+                        # cur_read_char写在这里，是为了避免循环，如，A->B,B->A，它们读取的位置都是第一位
+                        cur_read_char.append(production[0])
+                        left_next[production[0]] = tem
+                    else:
+                        left_next[production[0]] |= tem
+
             cur_read_char = cur_read_char[1:]
+
+        # 递归产生式
+        for cur in production_this.keys():
+            # 先判断是否是存在相同的状态，因为list是有序的，比较第一个添加进去的产生式的左部就ok
+            cmp_pro = production_this[cur][0]
+            # 判断左部相等且不是已经移进过的
+            continue_sign = False
+            if cmp_pro[0] in has_state.keys() and production_this[cur][0][-1] == 0:
+                # 判断产生式 next相等
+                for i in has_state[cmp_pro[0]]:
+                    if cmp_pro[1] == i[0]:
+                        if left_next[cmp_pro[0]] == i[1]:
+                            with open(am_file_name, 'a') as f:
+                                # 2 * M 10
+                                f.writelines(str(state) + ' ' + cur + ' M ' + str(i[2]) + '\n')
+                            continue_sign = True
+                            break
+            if continue_sign:
+                continue
+            # 当前读取字符相同时，它们是同一状态
+            same_state = state_count
+            state_count += 1
+            with open(am_file_name, 'a') as f:
+                # 2 * M 10
+                f.writelines(str(state) + ' ' + cur + ' M ' + str(same_state) + '\n')
+            for i in production_this[cur]:
+                get_am(i[0], all_production[i[0]][i[1]], i[2] + 1, left_next[i[0]], same_state)
 
 
 if __name__ == '__main__':
     # all_production dict key为str，产生式左部 value为list,产生式右部，list为产生式集，每一产生式为list of str，最后一个为语义代表符号
+    # all_production = {
+    #     'S': [['E', '']],
+    #     'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
+    #     'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
+    #     'F': [['I', '='], ['(', 'E', ')', '=']]
+    # }
     all_production = {
-        'S': [['E', '']],
-        'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
-        'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
-        'F': [['I', '='], ['(', 'E', ')', '=']]
+        'S': [['A', '']],
+        'A': [['A', '+', 'B', ''], ['+', '']],
+        'B': [['(', 'S', ')', '']]
     }
     am_file_name = 'tem.txt'
     # 当前可分配的状态
     state_count = 1
+    # 记录已存在的状态，key:str 左部，value:list of list [[pro_num（产生式序号）,next(list),state],]
     has_state = dict()
     with open(am_file_name, 'w'):
         pass
 
-    get_am('S', all_production['S'][0], 0, ['#'], 0)
+    get_am('S', all_production['S'][0], 0, set(['#']), 0)
