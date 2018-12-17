@@ -37,7 +37,7 @@ def get_am(left, right, pos, next, state):
         non_terminal_next = dict()
 
         # 当前产生式继续往下读
-        cur_char_state[right[pos]] = state_count
+        cur_char_state[right[pos]] = state
 
         with open(am_file_name, 'a') as f:
             # 2 * M 10
@@ -107,7 +107,7 @@ def get_am(left, right, pos, next, state):
 
                     state_count += 1
                     get_am(handling_char, production, 1, non_terminal_next[handling_char], state_count - 1)
-                    cur_char_state[production[0]] = state_count
+                    cur_char_state[production[0]] = state
             cur_read_char = cur_read_char[1:]
 
 
@@ -116,11 +116,13 @@ if __name__ == '__main__':
     all_production = {
         'S': [['E', '']],
         'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
-        'T': [['*', '=']]
+        'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
+        'F': [['I', '='], ['(', 'E', ')', '=']]
     }
     am_file_name = 'tem.txt'
     # 当前可分配的状态
     state_count = 1
+    has_state = dict()
     with open(am_file_name, 'w'):
         pass
 
