@@ -33,7 +33,7 @@ def get_first(left, num):
             for i in production_with_first[cur_char].values():
                 production_with_first[left][count[-1]] |= i
         else:
-            production_with_first[left][count[-1]] = set([cur_char])
+            production_with_first[left][count[-1]] = {cur_char}
         count[-1] += 1
 
     # 用于记录开始时，可能出现的{/[ 当前读取到的位置
@@ -78,7 +78,7 @@ for key in all_productions.keys():
         for i in range(len(all_productions[key])):
             get_first(key, i)
 
-with open('ll1LR1_expression.txt', 'w') as f:
+with open('ll1_ex.txt', 'w') as f:
     for left in production_with_first.keys():
         for num_production in production_with_first[left].keys():
             f.write(left + ' ')
