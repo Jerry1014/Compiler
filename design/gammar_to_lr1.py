@@ -1,4 +1,9 @@
 def get_first(a_non_terminal_char):
+    """
+    当出现两个非终结符相邻时，前一个非终结符求follow，即为后一个求first，此函数用于求非终结符的first
+    :param a_non_terminal_char: str 非终结符
+    :return: set first集
+    """
     if a_non_terminal_char not in left_first.keys():
         tem_first = set()
         for i in all_production[a_non_terminal_char]:
