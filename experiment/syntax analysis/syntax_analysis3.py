@@ -26,21 +26,6 @@ class Automaton:
         self.trans_dict = dict()
         self.get_trans_dict()
 
-    def start(self):
-        """
-        用于启动自动机进行分析，最后的结果为RIGHT（符合语法）/WRONG（不符）
-        :return: None
-        """
-        # 状态转换表不为空
-        if len(self.trans_dict) > 0:
-            while True:
-                self.read_next_token()
-                if self.state[-1] == 'OK':
-                    print('Right')
-                    break
-                elif self.state[-1] == 'Wrong':
-                    print('Wrong')
-                    break
 
     def read_next_token(self):
         """

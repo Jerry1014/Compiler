@@ -25,7 +25,6 @@ def get_token(this_format, file_name):
     :param file_name: 源程序文件路径
     :return: str, 迭代器，一次返回一个token
     :raise: LexicalError 词法错误
-    :raise: Uncertain 不确定的单词，可能是单词的组合，如a=b+c
     """
     key_word = ['int', 'main', 'void', 'if', 'else', 'char']
     delimiter = ['<=', '==', '=', '<', '>', '+', '-', '*', '/', '{', '}', ',', ';', '(', ')', '[', ']']
@@ -33,6 +32,7 @@ def get_token(this_format, file_name):
     def get_attribute(word_need_indentify):
         """
         传入一个单词，得到token的属性分类结果
+        :raise: Uncertain 不确定的单词，可能是单词的组合，如a=b+c
         """
         # 关键字
         if word_need_indentify in key_word:
@@ -118,7 +118,7 @@ def get_token(this_format, file_name):
 
 
 if __name__ == '__main__':
-    file_name = input('输入源程序文件名\n')
+    file_name = input('输入源程序文件名，不需要txt后缀\n') + '.txt'
     try:
         for i in get_token('{1} {0}', file_name):
             print(i)
