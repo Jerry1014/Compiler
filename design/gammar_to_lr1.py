@@ -20,6 +20,14 @@ def get_am(left, right, pos, next, state):
     :return:None
     """
     global state_count, has_state
+
+    # 当pos为1时，记录has_state信息，在后续对重复状态的判断中，就是对产生式读取第一个字符后进行判断
+    if pos == 1:
+        if left in has_state.keys():
+            has_state[left].append([all_production[left].index(right), next, state])
+        else:
+            has_state[left] = [[all_production[left].index(right), next, state]]
+
     # 生成规约状态
     if pos == len(right) - 1:
         set_of_next = set(next)
@@ -31,13 +39,6 @@ def get_am(left, right, pos, next, state):
             f.writelines(
                 str(state) + ' ' + next_str[:-1] + ' G ' + str(len(right) - 1) + ' ' + left + ' ' + right[-1] + '\n')
         return
-
-    # 当pos为1时，记录has_state信息，在后续对重复状态的判断中，就是对产生式读取第一个字符后进行判断
-    elif pos == 1:
-        if left in has_state.keys():
-            has_state[left].append([all_production[left].index(right), next, state])
-        else:
-            has_state[left] = [[all_production[left].index(right), next, state]]
 
     # 生成移进状态
     # 当前字符为终结符
@@ -64,7 +65,7 @@ def get_am(left, right, pos, next, state):
         # 记录展开后所有的产生式，key:str 下一个读取的字符 value:list of list 每一个list为一个产生式，[left，pro_num（产生式序号）]
         production_this = {right[pos]: [[left, all_production[left].index(right), pos]]}
         # 非终结符（key，str）及它的follow（value，set）
-        left_next = {left: next}
+        left_next = dict()
         # 当前产生式读取的字符，用于判断是否继续加入产生式
         cur_read_char = [right[pos]]
 
@@ -75,7 +76,7 @@ def get_am(left, right, pos, next, state):
             if right[pos + 1] not in all_production.keys():
                 left_next[right[pos]].add(right[pos + 1])
             else:
-                left_next[right[pos]] |= get_first(right[pos + 1])
+                left_next[right[pos]] = left_next[right[pos]]|get_first(right[pos + 1])
         else:
             left_next[right[pos]] = next
 
@@ -105,10 +106,16 @@ def get_am(left, right, pos, next, state):
                         cur_read_char.append(production[0])
                         left_next[production[0]] = tem
                     else:
-                        left_next[production[0]] |= tem
+                        left_next[production[0]] = left_next[production[0]]|tem
 
             cur_read_char = cur_read_char[1:]
 
+        # 将当前left加在这的原因是，下一步对当前产生式的移进需要用到当前的left和对应的next，以及避免当前left无法加入prodution的情况
+        # 如,F->(*E),E->*F,F->I
+        if left not in left_next.keys():
+            left_next[left] = next
+        else:
+            left_next[left] = left_next[left] | next
         # 递归产生式
         for cur in production_this.keys():
             # 先判断是否是存在相同的状态，因为list是有序的，比较第一个添加进去的产生式的左部就ok
@@ -139,17 +146,17 @@ def get_am(left, right, pos, next, state):
 
 if __name__ == '__main__':
     # all_production dict key为str，产生式左部 value为list,产生式右部，list为产生式集，每一产生式为list of str，最后一个为语义代表符号
-    # all_production = {
-    #     'S': [['E', '']],
-    #     'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
-    #     'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
-    #     'F': [['I', '='], ['(', 'E', ')', '=']]
-    # }
     all_production = {
-        'S': [['A', '']],
-        'A': [['A', '+', 'B', ''], ['+', '']],
-        'B': [['(', 'S', ')', '']]
+        'S': [['E', '']],
+        'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
+        'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
+        'F': [['I', '='], ['(', 'E', ')', '=']]
     }
+    # all_production = {
+    #     'S': [['A', '']],
+    #     'A': [['A', '+', 'B', ''], ['+', '']],
+    #     'B': [['(', 'S', ')', '']]
+    # }
     am_file_name = 'tem.txt'
     # 当前可分配的状态
     state_count = 1
