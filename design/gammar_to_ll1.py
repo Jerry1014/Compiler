@@ -78,7 +78,7 @@ for key in all_productions.keys():
         for i in range(len(all_productions[key])):
             get_first(key, i)
 
-with open('tem.txt', 'w') as f:
+with open('ll1LR1_expression.txt', 'w') as f:
     for left in production_with_first.keys():
         for num_production in production_with_first[left].keys():
             f.write(left + ' ')
