@@ -1,5 +1,15 @@
 def get_first(a_non_terminal_char):
-    return set()
+    if a_non_terminal_char not in left_first.keys():
+        tem_first = set()
+        for i in all_production[a_non_terminal_char]:
+            if i[0] not in all_production.keys():
+                tem_first.add(i[0])
+            elif i[0] in left_first.keys():
+                tem_first |= left_first[i[0]]
+            else:
+                tem_first |= get_first(i[0])
+        left_first[a_non_terminal_char] = tem_first
+    return left_first[a_non_terminal_char]
 
 
 def get_am(left, right, pos, next, state):
@@ -171,6 +181,8 @@ if __name__ == '__main__':
     state_count = 1
     # 记录已存在的状态，key:str 左部，value:list of list [[pro_num（产生式序号）,next(list),state],]
     has_state = dict()
+    # 记录各个非终结符的first key:str 左部，value:set first集
+    left_first = dict()
     with open(am_file_name, 'w'):
         pass
 
