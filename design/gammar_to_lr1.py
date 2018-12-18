@@ -76,7 +76,7 @@ def get_am(left, right, pos, next, state):
             if right[pos + 1] not in all_production.keys():
                 left_next[right[pos]].add(right[pos + 1])
             else:
-                left_next[right[pos]] = left_next[right[pos]]|get_first(right[pos + 1])
+                left_next[right[pos]] = left_next[right[pos]] | get_first(right[pos + 1])
         else:
             left_next[right[pos]] = next
 
@@ -106,7 +106,7 @@ def get_am(left, right, pos, next, state):
                         cur_read_char.append(production[0])
                         left_next[production[0]] = tem
                     else:
-                        left_next[production[0]] = left_next[production[0]]|tem
+                        left_next[production[0]] = left_next[production[0]] | tem
 
             cur_read_char = cur_read_char[1:]
 
@@ -146,18 +146,27 @@ def get_am(left, right, pos, next, state):
 
 if __name__ == '__main__':
     # all_production dict key为str，产生式左部 value为list,产生式右部，list为产生式集，每一产生式为list of str，最后一个为语义代表符号
-    all_production = {
-        'S': [['E', '']],
-        'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
-        'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
-        'F': [['I', '='], ['(', 'E', ')', '=3']]
-    }
     # all_production = {
-    #     'S': [['A', '']],
-    #     'A': [['A', '+', 'B', ''], ['+', '']],
-    #     'B': [['(', 'S', ')', '']]
+    #     'S': [['E', '']],
+    #     'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
+    #     'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
+    #     'F': [['I', '='], ['(', 'E', ')', '=3']]
     # }
-    am_file_name = 'lr1_ex.txt'
+    production_file_name = input('产生式文件名，无需txt后缀\n') + '.txt'
+    am_file_name = input('状态转换表保存文件名，无需txt后缀\n') + '.txt'
+    all_production = dict()
+
+    with open(production_file_name) as f:
+        line = f.readline().split()
+        start_char = line[0]
+        all_production[start_char] = [line[1:]]
+        for line in f.readlines():
+            line = line.split()
+            if line[0] in all_production.keys():
+                all_production[line[0]].append(line[1:])
+            else:
+                all_production[line[0]] = [line[1:]]
+
     # 当前可分配的状态
     state_count = 1
     # 记录已存在的状态，key:str 左部，value:list of list [[pro_num（产生式序号）,next(list),state],]
@@ -165,4 +174,4 @@ if __name__ == '__main__':
     with open(am_file_name, 'w'):
         pass
 
-    get_am('S', all_production['S'][0], 0, set(['#']), 0)
+    get_am(start_char, all_production[start_char][0], 0, {'#'}, 0)
