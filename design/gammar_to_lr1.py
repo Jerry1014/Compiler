@@ -157,7 +157,7 @@ if __name__ == '__main__':
     #     'A': [['A', '+', 'B', ''], ['+', '']],
     #     'B': [['(', 'S', ')', '']]
     # }
-    am_file_name = 'lr1LR1_expression.txt'
+    am_file_name = 'lr1_ex.txt'
     # 当前可分配的状态
     state_count = 1
     # 记录已存在的状态，key:str 左部，value:list of list [[pro_num（产生式序号）,next(list),state],]
