@@ -161,12 +161,16 @@ def get_am(left, right, pos, next, state):
 
 if __name__ == '__main__':
     # all_production dict key为str，产生式左部 value为list,产生式右部，list为产生式集，每一产生式为list of str，最后一个为语义代表符号
+
+    # 这一段测试用
     # all_production = {
-    #     'S': [['E', '']],
-    #     'E': [['E', '+', 'T', '+'], ['E', '-', 'T', '-'], ['T', '=']],
-    #     'T': [['T', '*', 'F', '*'], ['T', '/', 'F', '/'], ['F', '=']],
-    #     'F': [['I', '='], ['(', 'E', ')', '=3']]
+    #     'S': [['E', '0']],
+    #     'E': [['E', 'T', '0'], ['T', '0']],
+    #     'T': [['I', '0']],
     # }
+    # am_file_name = 'tem.txt'
+    # start_char = 'S'
+
     production_file_name = input('产生式文件名，无需txt后缀\n') + '.txt'
     am_file_name = input('状态转换表保存文件名，无需txt后缀\n') + '.txt'
     all_production = dict()

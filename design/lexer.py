@@ -26,7 +26,9 @@ def get_token(this_format, file_name):
     :return: str, 迭代器，一次返回一个token
     :raise: LexicalError 词法错误
     """
-    key_word = ['int', 'main', 'void', 'if', 'else', 'char']
+    key_word = ['void', 'int', 'short', 'long', 'float', 'double', 'auto', 'char', 'unsigned', 'signed', 'register',
+                'volatile', 'static', 'struct', 'union', 'enum', 'typedef', 'const', 'extern', 'if', 'else',
+                'switch', 'case', 'for', 'do', 'while', 'goto', 'continue', 'break', 'default', 'sizeof', 'return']
     delimiter = ['<=', '==', '=', '<', '>', '+', '-', '*', '/', '{', '}', ',', ';', '(', ')', '[', ']']
 
     def get_attribute(word_need_indentify):
@@ -50,7 +52,8 @@ def get_token(this_format, file_name):
             else:
                 raise LexicalError(line_num, '词法错误，未找到\"')
         # 常数
-        elif word_need_indentify[0].isdigit() or word_need_indentify[0] == '+' or word_need_indentify[0] == '-':
+        elif word_need_indentify[0].isdigit() or (
+                (word_need_indentify[0] == '+' or word_need_indentify[0] == '-') and len(word_need_indentify) > 1):
             try:
                 float(word_need_indentify)
             except ValueError:
@@ -70,7 +73,7 @@ def get_token(this_format, file_name):
         line_num = 1
         for line in f.readlines():
             # 按空格分割
-            words = line.split(' ')
+            words = line.split()
             # 多个空格会产生''的处理
             for word in words:
                 note = False

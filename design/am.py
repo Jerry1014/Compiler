@@ -118,6 +118,8 @@ class Automaton:
         elif action == '=3':
             # 形如(E)时，值的向上传递
             self.semantic_sym = op[1][-1]
+        elif action == '0':
+            pass
         else:
             # 目前只考虑+—*/的处理
             self.semantic_sym = 't' + str(self.temporary_num)
@@ -135,6 +137,6 @@ class Automaton:
 
 
 if __name__ == '__main__':
-    my_token = get_token('{0} {1}', 'ex_e.txt')
+    my_token = get_token('{0} {1}', 'ex.txt')
     sm = Automaton('0', my_token)
     sm.start()
