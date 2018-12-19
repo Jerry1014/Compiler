@@ -1,9 +1,12 @@
-def get_first(a_non_terminal_char):
+def get_first(a_non_terminal_char, layer_count):
     """
     当出现两个非终结符相邻时，前一个非终结符求follow，即为后一个求first，此函数用于求非终结符的first
     :param a_non_terminal_char: str 非终结符
     :return: set first集
     """
+    if layer_count > 500:
+        print('在求first集时，遇到循环。当前要求first集的符号为',a_non_terminal_char)
+        return set()
     if a_non_terminal_char not in left_first.keys():
         tem_first = set()
         for i in all_production[a_non_terminal_char]:
@@ -11,8 +14,8 @@ def get_first(a_non_terminal_char):
                 tem_first.add(i[0])
             elif i[0] in left_first.keys():
                 tem_first |= left_first[i[0]]
-            else:
-                tem_first |= get_first(i[0])
+            elif i[0] != a_non_terminal_char:
+                tem_first |= get_first(i[0], layer_count + 1)
         left_first[a_non_terminal_char] = tem_first
     return left_first[a_non_terminal_char]
 
@@ -35,6 +38,10 @@ def get_am(left, right, pos, next, state):
     :return:None
     """
     global state_count, has_state
+
+    # 测试用断点
+    if state%50 == 0:
+        pass
 
     # 当pos为1时，记录has_state信息，在后续对重复状态的判断中，就是对产生式读取第一个字符后进行判断
     if pos == 1:
@@ -91,7 +98,7 @@ def get_am(left, right, pos, next, state):
             if right[pos + 1] not in all_production.keys():
                 left_next[right[pos]].add(right[pos + 1])
             else:
-                left_next[right[pos]] = left_next[right[pos]] | get_first(right[pos + 1])
+                left_next[right[pos]] = left_next[right[pos]] | get_first(right[pos + 1], 0)
         else:
             left_next[right[pos]] = next
 
@@ -111,7 +118,7 @@ def get_am(left, right, pos, next, state):
                 if production[0] in all_production.keys():
                     tem = set()
                     if production[1] in all_production.keys():
-                        tem = get_first(production[1])
+                        tem = get_first(production[1], 0)
                     elif len(production) > 2:
                         tem.add(production[1])
                     else:
