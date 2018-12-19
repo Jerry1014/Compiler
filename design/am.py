@@ -137,7 +137,7 @@ class Automaton:
 
 
 if __name__ == '__main__':
-    file_name = input('输入源程序文件名，无需txt后缀') + '.txt'
+    file_name = input('输入源程序文件名，无需txt后缀\n') + '.txt'
     my_token = get_token('{0} {1}', file_name)
     sm = Automaton('0', my_token)
     sm.start()
