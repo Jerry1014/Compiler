@@ -50,10 +50,19 @@ class Automaton:
                     print('语法制导完成')
                     break
 
+                # # 用于配合产生式中I的定义
+                # if (self.token[-self.token_backward][1] == 'i' or self.token[-self.token_backward][1] == 'c') and len(
+                #         self.token[-self.token_backward]) < 3:
+                #     # tem = ['I', self.token[-self.token_backward][1], self.token[-self.token_backward][0]]
+                #     self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
+                #                                         self.token[-self.token_backward][0]]
+
                 # 用于配合产生式中I的定义
-                if (self.token[-self.token_backward][1] == 'i' or self.token[-self.token_backward][1] == 'c') and len(
-                        self.token[-self.token_backward]) < 3:
-                    # tem = ['I', self.token[-self.token_backward][1], self.token[-self.token_backward][0]]
+                if self.token[-self.token_backward][1] == 'c' and len(self.token[-self.token_backward]) < 3:
+                    self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
+                                                        self.token[-self.token_backward][0]]
+
+                if self.token[-self.token_backward][1] == 'i' and len(self.token[-self.token_backward]) < 3:
                     self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
                                                         self.token[-self.token_backward][0]]
 
@@ -93,10 +102,22 @@ class Automaton:
         """
         try:
             trans_file = input('输入状态转移文件，不需要后缀名，默认txt\n')
+            state_char = dict()
             with open(trans_file + '.txt') as f:
                 for line in f.readlines():
                     cur_sta, *trans = line.split()
                     trans[0] = trans[0].split(',')
+
+                    if cur_sta not in state_char.keys():
+                        state_char[cur_sta] = set(trans[0])
+                    else:
+                        if len(state_char[cur_sta] & set(trans[0])) == 0:
+                            state_char[cur_sta] |= set(trans[0])
+                        else:
+                            print('状态转换表有冲突！')
+                            self.trans_dict = dict()
+                            return
+
                     if cur_sta not in self.trans_dict.keys():
                         self.trans_dict[cur_sta] = [trans, ]
                     else:
