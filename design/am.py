@@ -37,6 +37,10 @@ class Automaton:
         # 状态转换表不为空
         if len(self.trans_dict) > 0:
             while True:
+                if self.state[-1] == 'OK':
+                    print('语法制导完成')
+                    break
+
                 # 取一个token
                 try:
                     if self.token_backward > 1:
@@ -47,24 +51,20 @@ class Automaton:
                     print('发生词法错误！\n在第{}行，发生了"{}"错误'.format(e.line_num, e.msg))
                     break
                 except StopIteration:
-                    print('语法制导完成')
+                    print('语法制导失败')
+                    print('请注意，是否没有诸如S->E,#的开始产生式\n')
+                    print('以及，0 状态的规约成开始符号，需改为移进到OK状态\n')
                     break
 
-                # # 用于配合产生式中I的定义
-                # if (self.token[-self.token_backward][1] == 'i' or self.token[-self.token_backward][1] == 'c') and len(
-                #         self.token[-self.token_backward]) < 3:
-                #     # tem = ['I', self.token[-self.token_backward][1], self.token[-self.token_backward][0]]
-                #     self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
-                #                                         self.token[-self.token_backward][0]]
+                if len(self.token[-self.token_backward]) < 3:
+                    # 用于配合产生式中I的定义
+                    if self.token[-self.token_backward][1] == 'c':
+                        self.token[-self.token_backward] = ['C', self.token[-self.token_backward][1],
+                                                            {'value': self.token[-self.token_backward][0]}]
 
-                # 用于配合产生式中I的定义
-                if self.token[-self.token_backward][1] == 'c' and len(self.token[-self.token_backward]) < 3:
-                    self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
-                                                        self.token[-self.token_backward][0]]
-
-                if self.token[-self.token_backward][1] == 'i' and len(self.token[-self.token_backward]) < 3:
-                    self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
-                                                        self.token[-self.token_backward][0]]
+                    if self.token[-self.token_backward][1] == 'i':
+                        self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
+                                                            {'value': self.token[-self.token_backward][0]}]
 
                 sign = 0
                 for tr in self.trans_dict[self.state[-1]]:
@@ -81,7 +81,7 @@ class Automaton:
                             self.semantic_action_step1(tr[4], self.token[-int(tr[2]) - 1:-1])
                             the_next = self.token.pop()
                             self.token = self.token[:-int(tr[2])]
-                            self.token.append([tr[3], '', ''])
+                            self.token.append([tr[3], '', dict()])
                             self.semantic_action_step2()
                             self.token.append(the_next)
                             self.state = self.state[:-int(tr[2])]
@@ -90,6 +90,7 @@ class Automaton:
                 if sign == 0:
                     print(self.token)
                     print('发生语法错误')
+                    print('当前状态栈', self.state)
                     break
         else:
             print('状态转换表为空！')
@@ -115,9 +116,9 @@ class Automaton:
                             state_char[cur_sta] |= set(trans[0])
                         else:
                             print('状态转换表有冲突！')
+                            print('冲突状态', cur_sta)
                             self.trans_dict = dict()
                             return
-
                     if cur_sta not in self.trans_dict.keys():
                         self.trans_dict[cur_sta] = [trans, ]
                     else:
@@ -133,19 +134,56 @@ class Automaton:
         :param op: 语义动作的对象
         :return: None
         """
-        if action == '=':
-            # 简单将值向上传递
-            self.semantic_sym = op[0][-1]
+        self.semantic_sym = ''
+        if action == '0':
+            pass
+        elif action == '=':
+            # 简单将值向上传递,从value到value
+            self.semantic_sym = op[0][-1]['value']
         elif action == '=3':
             # 形如(E)时，值的向上传递
-            self.semantic_sym = op[1][-1]
-        elif action == '0':
-            pass
-        else:
+            self.semantic_sym = op[1][-1]['value']
+        elif action == '=I':
+            # 将值赋予变量,输出四元式
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('=' + ',' + op[-2][-1]['value'] + ',' + '_' + ',' + op[0][-1]['value'])
+                f.write('\n')
+        elif action == 'IF':
+            # 当碰到IF语句时，产生if的四元式
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('if' + ',_,_,_')
+                f.write('\n')
+        elif action == 'I_J':
+            # 判断if的跳转
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('i_j' + ',' + op[1][-1]['value'] + ',_,_')
+                f.write('\n')
+        elif action == 'IEJ':
+            # 跳转到else的情况
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('iej' + ',_,_,_')
+                f.write('\n')
+        elif action == 'IE':
+            # if结束
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('ie' + ',_,_,_')
+                f.write('\n')
+        elif action == 'PE':
+            # 程序段规约结束
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('pe' + ',_,_,' + op[0][-1]['value'])
+                f.write('\n')
+        elif action == 'PS':
+            # 程序段入口
+            self.semantic_sym = op[1][-1]['value']
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('ps' + ',_,_,' + op[1][-1]['value'])
+                f.write('\n')
+        elif action == '+' or action == '-' or action == '*' or action == '/':
             # 目前只考虑+—*/的处理
             self.semantic_sym = 't' + str(self.temporary_num)
             with open(self.quaternion_save_file, 'a') as f:
-                f.write(action + ',' + op[0][-1] + ',' + op[-1][-1] + ',' + self.semantic_sym)
+                f.write(action + ',' + op[0][-1]['value'] + ',' + op[-1][-1]['value'] + ',' + self.semantic_sym)
                 f.write('\n')
             self.temporary_num += 1
 
@@ -154,7 +192,8 @@ class Automaton:
         用于生成语义动作
         :return: None
         """
-        self.token[-1][-1] = self.semantic_sym
+        if len(self.semantic_sym) > 0:
+            self.token[-1][-1]['value'] = self.semantic_sym
 
 
 if __name__ == '__main__':

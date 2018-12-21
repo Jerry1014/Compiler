@@ -29,7 +29,7 @@ def get_token(this_format, file_name):
     key_word = ['void', 'int', 'short', 'long', 'float', 'double', 'auto', 'char', 'unsigned', 'signed', 'register',
                 'volatile', 'static', 'struct', 'union', 'enum', 'typedef', 'const', 'extern', 'if', 'else',
                 'switch', 'case', 'for', 'do', 'while', 'goto', 'continue', 'break', 'default', 'sizeof', 'return']
-    delimiter = ['<=', '==', '=', '<', '>', '+', '-', '*', '/', '{', '}', ',', ';', '(', ')', '[', ']']
+    delimiter = ['<=', '==', '=', '<', '>', '+', '-', '*', '/', '{', '}', ',', ';', '(', ')', '[', ']','#']
 
     def get_attribute(word_need_indentify):
         """

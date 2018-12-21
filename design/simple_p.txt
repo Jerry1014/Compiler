@@ -1,0 +1,45 @@
+Program_start Program 0
+Program Program0 { Statement_list Return } PE
+Program0 Type I ( ) PS
+Type void 0
+Type char 0
+Type int 0
+Type float 0
+Statement_list Statement_list Statement 0
+Statement_list Statement 0
+
+Statement Declaration_statement 0
+Statement Expression_statement 0
+Statement Selection_statement 0
+Statement Iteration_statement 0
+
+Declaration_statement Type Declaration ; 0
+Declaration Init_declarator 0
+Declaration Init_declarator , Declaration 0
+Init_declarator I 0
+Init_declarator I = Initializer 0
+Initializer Expression 0
+
+Expression_statement I = Expression ; =I
+Expression E =
+
+E E + T +
+E E - T -
+E T =
+T T * F *
+T T / F /
+T F =
+F C =
+F I =
+F ( E ) =3
+
+Selection_statement Selection_statement0 Selection_statement1 Selection_statement2 Selection_statement3 0
+Selection_statement0 if IF
+Selection_statement1 ( Expression ) I_J
+Selection_statement2 { Statement } else IEJ
+Selection_statement3 { Statement } IE
+
+Iteration_statement while ( Expression ) { Statement } 0
+
+Return return 0
+Return return Expression 0

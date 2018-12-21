@@ -49,7 +49,7 @@ def get_am(left, right, pos, next, state):
 
     # 测试用断点
     if state % 10 == 0:
-        print('000')
+        print('当前状态',state)
 
     # 生成规约状态
     if pos == len(right) - 1:
@@ -216,10 +216,11 @@ if __name__ == '__main__':
         all_production[start_char] = [line[1:]]
         for line in f.readlines():
             line = line.split()
-            if line[0] in all_production.keys():
-                all_production[line[0]].append(line[1:])
-            else:
-                all_production[line[0]] = [line[1:]]
+            if len(line) > 0:
+                if line[0] in all_production.keys():
+                    all_production[line[0]].append(line[1:])
+                else:
+                    all_production[line[0]] = [line[1:]]
 
     with open(am_file_name, 'w'):
         pass
