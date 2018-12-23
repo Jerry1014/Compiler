@@ -5,6 +5,8 @@ has_state = dict()
 # 记录各个非终结符的first key:str 左部，value:set first集
 left_first = dict()
 
+hui_tian = list()
+
 
 def get_first(a_non_terminal_char, layer_count):
     """
@@ -45,11 +47,11 @@ def get_am(left, right, pos, next, state):
     :param state:int 当前子程序代表的状态
     :return:None
     """
-    global state_count, has_state, left_state, need_copy
+    global state_count, has_state, left_first, hui_tian
 
     # 测试用断点
     if state % 10 == 0:
-        print('当前状态',state)
+        print('当前状态', state)
 
     # 生成规约状态
     if pos == len(right) - 1:
@@ -60,11 +62,24 @@ def get_am(left, right, pos, next, state):
         with open(am_file_name, 'a') as f:
             # 3 +,-,*,/,# G 1 T =
             f.writelines(
-                str(state) + ' ' + next_str[:-1] +
-                ' G ' + str(len(right) - 1) + ' ' + left + ' ' + right[-1] + '\n')
+                str(state) + ' ' + next_str[:-1] + ' G ' + str(len(right) - 1) + ' ' + left + ' ' + right[-1] + '\n')
 
     else:
         # 生成移进状态
+
+        # 判断读取当前字符后是否为重复状态
+        return_sign = False
+        if left in has_state.keys():
+            # 判断产生式 next相等
+            for j in has_state[left]:
+                if all_production[left].index(right) == j[0]:
+                    if next == j[2]:
+                        if pos == j[1]:
+                            hui_tian.append([left, has_state[left].index(j), state])
+                            return_sign = True
+                            break
+        if return_sign:
+            return
 
         # 保存这个状态的子节点
         string_saver = set()
@@ -78,8 +93,8 @@ def get_am(left, right, pos, next, state):
             with open(am_file_name, 'a') as f:
                 f.writelines(str(state) + ' ' + right[pos] + ' M ' + str(state_count) + '\n')
                 string_saver.add(right[pos] + ' M ' + str(state_count))
-            state_count += 1
-            get_am(left, right, pos + 1, next, state_count - 1)
+                state_count += 1
+                get_am(left, right, pos + 1, next, state_count - 1)
 
         # 当前字符为非终结符
         else:
@@ -139,28 +154,29 @@ def get_am(left, right, pos, next, state):
                 left_next[left] = next
             else:
                 left_next[left] = left_next[left] | next
+
             # 递归产生式
             for cur in production_this.keys():
-                # 先判断是否是存在相同的状态，因为list是有序的，比较第一个添加进去的产生式的左部就ok
-                cmp_pro = production_this[cur][0]
-
-                # 判断左部相等且不是已经移进过的
-                continue_sign = False
-                if cmp_pro[2] == 0:
-                    if cmp_pro[0] in has_state.keys():
-                        # 判断产生式 next相等
-                        for i in has_state[cmp_pro[0]]:
-                            if cmp_pro[1] == i[0]:
-                                if left_next[cmp_pro[0]] == i[2]:
-                                    if cmp_pro[2] == i[1] - 1:
-                                        with open(am_file_name, 'a') as f:
-                                            # 2 * M 10
-                                            f.writelines(str(state) + ' ' + cur + ' M ' + str(i[3]) + '\n')
-                                            string_saver.add(cur + ' M ' + str(i[3]))
-                                        continue_sign = True
-                                        break
-                if continue_sign:
-                    continue
+                # # 先判断是否是存在相同的状态，因为list是有序的，比较第一个添加进去的产生式的左部就ok
+                # cmp_pro = production_this[cur][0]
+                #
+                # # 判断左部相等且不是已经移进过的
+                # continue_sign = False
+                # if cmp_pro[2] == 0:
+                #     if cmp_pro[0] in has_state.keys():
+                #         # 判断产生式 next相等
+                #         for i in has_state[cmp_pro[0]]:
+                #             if cmp_pro[1] == i[0]:
+                #                 if left_next[cmp_pro[0]] == i[2]:
+                #                     if cmp_pro[2] == i[1] - 1:
+                #                         with open(am_file_name, 'a') as f:
+                #                             # 2 * M 10
+                #                             f.writelines(str(state) + ' ' + cur + ' M ' + str(i[3]) + '\n')
+                #                             string_saver.add(cur + ' M ' + str(i[3]))
+                #                         continue_sign = True
+                #                         break
+                # if continue_sign:
+                #     continue
 
                 # 当前读取字符相同时，它们是同一状态
                 same_state = state_count
@@ -171,24 +187,22 @@ def get_am(left, right, pos, next, state):
                     string_saver.add(cur + ' M ' + str(same_state))
 
                 for i in production_this[cur]:
-                    # 每个小产生式读完当前字符后，判断是否为已存在的状态
-                    continue_sign = False
-                    # 跳过本状态的产生式，因为它已经在程序开头记录在has_state
-                    if not (i[0] == left and all_production[i[0]][i[1]] == right and i[2] == pos):
-                        if i[0] in has_state.keys():
-                            # 判断产生式 next相等
-                            for j in has_state[i[0]]:
-                                if i[1] == j[0]:
-                                    if left_next[i[0]] == j[2]:
-                                        if i[2] + 1 == j[1]:
-                                            for k in j[4]:
-                                                with open(am_file_name, 'a') as f:
-                                                    # 2 * M 10
-                                                    f.writelines(str(same_state) + ' ' + k + '\n')
-                                                continue_sign = True
-                                                break
-                    if continue_sign:
-                        continue
+                #     # 每个小产生式读完当前字符后，判断是否为已存在的状态
+                #     continue_sign = False
+                #     # 跳过本状态的产生式，因为它已经在程序开头记录在has_state
+                #     if not (i[0] == left and all_production[i[0]][i[1]] == right and i[2] == pos):
+                #         if i[0] in has_state.keys():
+                #             # 判断产生式 next相等
+                #             for j in has_state[i[0]]:
+                #                 if i[1] == j[0]:
+                #                     if left_next[i[0]] == j[2]:
+                #                         if i[2] + 1 == j[1]:
+                #                             if len(j[4]) > 0:
+                #                                 hui_tian.append([i[0], has_state[i[0]].index(j), same_state])
+                #                                 continue_sign = True
+                #                                 break
+                #     if continue_sign:
+                #         continue
 
                     get_am(i[0], all_production[i[0]][i[1]], i[2] + 1, left_next[i[0]], same_state)
 
@@ -226,3 +240,9 @@ if __name__ == '__main__':
         pass
 
     get_am(start_char, all_production[start_char][0], 0, {'#'}, 0)
+
+    for i in hui_tian:
+        for j in has_state[i[0]][i[1]][-1]:
+            with open(am_file_name, 'a') as f:
+                # 2 * M 10
+                f.writelines(str(i[-1]) + ' ' + j + '\n')

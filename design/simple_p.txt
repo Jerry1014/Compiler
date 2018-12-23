@@ -1,6 +1,6 @@
 Program_start Program 0
-Program Program0 { Statement_list Return } PE
-Program0 Type I ( ) PS
+Program Program0 { Statement_list } PE
+Program0 Type ID ( ) PS
 Type void 0
 Type char 0
 Type int 0
@@ -12,26 +12,48 @@ Statement Declaration_statement 0
 Statement Expression_statement 0
 Statement Selection_statement 0
 Statement Iteration_statement 0
+Statement Return_statement 0
 
 Declaration_statement Type Declaration ; 0
 Declaration Init_declarator 0
 Declaration Init_declarator , Declaration 0
-Init_declarator I 0
-Init_declarator I = Initializer 0
+Init_declarator ID 0
+Init_declarator ID = Initializer 0
 Initializer Expression 0
 
-Expression_statement I = Expression ; =I
-Expression E =
 
-E E + T +
-E E - T -
-E T =
-T T * F *
-T T / F /
-T F =
-F C =
-F I =
-F ( E ) =3
+Expression_statement ID = Expression ; =I
+
+Expression Expression || A ||
+Expression A =
+A A && B &&
+A B =
+B B | C |
+B C =
+C C ^ D ^
+C D =
+D D & E &
+D E =
+E E != F !=
+E E == F ==
+E F =
+F F < G <
+F F <= G <=
+F F > G >
+F F >= G >=
+F G =
+G G << H <<
+G G >> H >>
+G H =
+H H + I +
+H H - I -
+H I =
+I I * J *
+I I / J /
+I J =
+J ID =
+J CO =
+J ( Expression ) =3
 
 Selection_statement Selection_statement0 Selection_statement1 Selection_statement2 Selection_statement3 0
 Selection_statement0 if IF
@@ -39,7 +61,9 @@ Selection_statement1 ( Expression ) I_J
 Selection_statement2 { Statement } else IEJ
 Selection_statement3 { Statement } IE
 
-Iteration_statement while ( Expression ) { Statement } 0
+Iteration_statement Iteration_statement0 Iteration_statement1 Iteration_statement2 0
+Iteration_statement0 while WH
+Iteration_statement1 ( Expression ) WJ
+Iteration_statement2 { Statement } WE
 
-Return return 0
-Return return Expression 0
+Return_statement return Expression ; 0

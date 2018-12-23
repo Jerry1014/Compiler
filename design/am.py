@@ -51,19 +51,21 @@ class Automaton:
                     print('发生词法错误！\n在第{}行，发生了"{}"错误'.format(e.line_num, e.msg))
                     break
                 except StopIteration:
-                    print('语法制导失败')
-                    print('请注意，是否没有诸如S->E,#的开始产生式\n')
+                    print('语法制导失败，token已读完')
+                    print('当前状态栈',self.state)
+                    print('\n请注意，是否没有诸如S->E,#的开始产生式')
                     print('以及，0 状态的规约成开始符号，需改为移进到OK状态\n')
                     break
+
 
                 if len(self.token[-self.token_backward]) < 3:
                     # 用于配合产生式中I的定义
                     if self.token[-self.token_backward][1] == 'c':
-                        self.token[-self.token_backward] = ['C', self.token[-self.token_backward][1],
+                        self.token[-self.token_backward] = ['CO', self.token[-self.token_backward][1],
                                                             {'value': self.token[-self.token_backward][0]}]
 
                     if self.token[-self.token_backward][1] == 'i':
-                        self.token[-self.token_backward] = ['I', self.token[-self.token_backward][1],
+                        self.token[-self.token_backward] = ['ID', self.token[-self.token_backward][1],
                                                             {'value': self.token[-self.token_backward][0]}]
 
                 sign = 0
@@ -74,6 +76,7 @@ class Automaton:
                         if tr[1] == 'M':
                             # 移进
                             self.state.append(tr[2])
+                            break
                         else:
                             # 规约
                             # 语义动作执行前的准备 保存最后一个符号（next） 从token里删除要规约的部分 将规约成的左部加到token
@@ -86,11 +89,14 @@ class Automaton:
                             self.token.append(the_next)
                             self.state = self.state[:-int(tr[2])]
                             self.token_backward = 3
+                            break
 
                 if sign == 0:
                     print(self.token)
-                    print('发生语法错误')
+                    print('发生语法错误，无对应的移进规约状态')
                     print('当前状态栈', self.state)
+                    print('\n请注意，是否没有诸如S->E,#的开始产生式')
+                    print('以及，0 状态的规约成开始符号，需改为移进到OK状态\n')
                     break
         else:
             print('状态转换表为空！')
@@ -179,7 +185,24 @@ class Automaton:
             with open(self.quaternion_save_file, 'a') as f:
                 f.write('ps' + ',_,_,' + op[1][-1]['value'])
                 f.write('\n')
-        elif action == '+' or action == '-' or action == '*' or action == '/':
+        elif action == 'WH':
+            # while入口
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('wh' + ',_,_,_')
+                f.write('\n')
+        elif action == 'WJ':
+            # while判断
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('wj' + ',' + op[1][-1]['value'] + ',_,_')
+                f.write('\n')
+        elif action == 'WE':
+            # while结束
+            with open(self.quaternion_save_file, 'a') as f:
+                f.write('we' + ',_,_,_')
+                f.write('\n')
+        elif action == '+' or action == '-' or action == '*' or action == '/' or action == '<<' or action == '>>' or \
+                action == '&' or action == '|' or action == '||' or action == '&&' or action == '!=' or action == '==' \
+                or action == '<=' or action == '>=' or action == '<' or action == '>':
             # 目前只考虑+—*/的处理
             self.semantic_sym = 't' + str(self.temporary_num)
             with open(self.quaternion_save_file, 'a') as f:

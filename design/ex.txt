@@ -1,14 +1,15 @@
-int main(void)
+int main( )
 {
-    int a=1,d=2,c;
-    // ok
-    if(a<=d)
-    {
-        c=a;
-        a=d;
-        d=c;
+    int a=1;
+    if(a==1){
+    a = a+1;
     }
-    char ch[10]="ok",ch2="ok2";//ok2
-    char x,y='a',z='b';
-    c=a+d;
+    else{
+    a=2;
+    }
+    while(a<5){
+    a=a-1;
+    }
+    return a;
 }
+#
